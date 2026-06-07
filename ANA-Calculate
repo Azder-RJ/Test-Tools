@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b2a6f" />
+  <title>ANA 机票价格比较器</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #dfe5ef;
+      --primary: #0b2a6f;
+      --primary-2: #1b64d8;
+      --good: #087a55;
+      --good-bg: #e9f8f1;
+      --warn: #a15c00;
+      --warn-bg: #fff5df;
+      --shadow: 0 10px 28px rgba(16, 42, 89, 0.08);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      background: var(--bg);
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(27, 100, 216, 0.12), transparent 35%),
+        var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    .app {
+      width: min(100%, 760px);
+      margin: 0 auto;
+      padding: max(18px, env(safe-area-inset-top)) 14px
+        max(32px, env(safe-area-inset-bottom));
+    }
+
+    .hero {
+      padding: 12px 4px 18px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(26px, 7vw, 38px);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(223, 229, 239, 0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .tag {
+      white-space: nowrap;
+      font-size: 12px;
+      color: var(--primary);
+      background: #eaf1ff;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      min-width: 0;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      margin: 0 0 7px;
+      color: #344054;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      min-height: 50px;
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      background: #fbfcfe;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+
+    .input-wrap:focus-within {
+      border-color: var(--primary-2);
+      box-shadow: 0 0 0 4px rgba(27, 100, 216, 0.12);
+      background: #fff;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      padding: 14px;
+      color: var(--text);
+      font-size: 17px;
+      font-weight: 700;
+      appearance: textfield;
+    }
+
+    select {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      padding: 14px;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      appearance: none;
+      margin: 0;
+    }
+
+    .unit {
+      flex: 0 0 auto;
+      padding: 0 13px 0 4px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .hint {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 48px;
+    }
+
+    .toggle-copy {
+      min-width: 0;
+    }
+
+    .toggle-copy strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 3px;
+    }
+
+    .toggle-copy span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .switch {
+      position: relative;
+      width: 52px;
+      height: 31px;
+      flex: 0 0 auto;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      cursor: pointer;
+      background: #cfd6e2;
+      border-radius: 999px;
+      transition: .2s;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 25px;
+      height: 25px;
+      left: 3px;
+      top: 3px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 8px rgba(0,0,0,.18);
+      transition: .2s;
+    }
+
+    .switch input:checked + .slider {
+      background: var(--primary-2);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(21px);
+    }
+
+    details {
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: 800;
+      user-select: none;
+    }
+
+    .advanced {
+      margin-top: 14px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin: 16px 0 14px;
+    }
+
+    .btn {
+      min-height: 52px;
+      border: 0;
+      border-radius: 15px;
+      padding: 0 20px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .08s, opacity .2s;
+    }
+
+    .btn:active {
+      transform: scale(.98);
+    }
+
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 10px 20px rgba(27, 100, 216, .22);
+    }
+
+    .btn-secondary {
+      color: var(--primary);
+      background: #eaf1ff;
+      padding-inline: 16px;
+    }
+
+    .error {
+      display: none;
+      margin-bottom: 14px;
+      color: #b42318;
+      background: #fff1f0;
+      border: 1px solid #ffd1cc;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .result {
+      display: none;
+    }
+
+    .winner {
+      background:
+        linear-gradient(135deg, rgba(11,42,111,.97), rgba(27,100,216,.92)),
+        #0b2a6f;
+      color: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 14px 30px rgba(11,42,111,.24);
+    }
+
+    .winner .eyebrow {
+      font-size: 12px;
+      font-weight: 800;
+      opacity: .78;
+      margin-bottom: 7px;
+      letter-spacing: .08em;
+    }
+
+    .winner h2 {
+      margin: 0 0 8px;
+      font-size: 25px;
+      line-height: 1.25;
+    }
+
+    .winner .price {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+    }
+
+    .winner .sub {
+      margin-top: 8px;
+      font-size: 13px;
+      opacity: .84;
+      line-height: 1.55;
+    }
+
+    .comparison {
+      display: grid;
+      gap: 10px;
+    }
+
+    .option {
+      position: relative;
+      border: 1.5px solid var(--line);
+      border-radius: 17px;
+      padding: 15px;
+      background: #fff;
+    }
+
+    .option.best {
+      border-color: #47b48a;
+      background: var(--good-bg);
+    }
+
+    .option.selected {
+      box-shadow: inset 0 0 0 1px rgba(8, 122, 85, .35);
+    }
+
+    .option-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .option-name {
+      font-weight: 900;
+      font-size: 16px;
+    }
+
+    .option-badge {
+      color: var(--good);
+      background: #d7f2e7;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .option-price {
+      margin-top: 8px;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .option-meta {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .reason {
+      margin-top: 14px;
+      padding: 14px;
+      background: var(--warn-bg);
+      color: #6c4300;
+      border-radius: 15px;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .formula {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.65;
+    }
+
+    .footer-note {
+      padding: 4px 6px 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 540px) {
+      .app {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .card {
+        padding: 15px;
+        border-radius: 18px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-secondary {
+        min-height: 46px;
+      }
+
+      .winner h2 {
+        font-size: 22px;
+      }
+
+      .winner .price {
+        font-size: 28px;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1420;
+        --card: #171e2c;
+        --text: #eef3ff;
+        --muted: #a8b1c2;
+        --line: #303a4c;
+        --shadow: 0 12px 28px rgba(0,0,0,.22);
+        --good-bg: #12372b;
+        --warn-bg: #3a2b11;
+      }
+
+      body {
+        background:
+          radial-gradient(circle at top right, rgba(27,100,216,.22), transparent 35%),
+          var(--bg);
+      }
+
+      .input-wrap {
+        background: #111827;
+      }
+
+      .input-wrap:focus-within {
+        background: #111827;
+      }
+
+      label {
+        color: #dce4f3;
+      }
+
+      .option {
+        background: #151c29;
+      }
+
+      .option.best {
+        background: var(--good-bg);
+      }
+
+      .reason {
+        color: #ffd98a;
+      }
+
+      .error {
+        color: #ffb4ab;
+        background: #3a1714;
+        border-color: #6f2a24;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <h1>ANA 机票价格比较器</h1>
+      <p>将日元、人民币、固定换汇手续费、里程价值和商务舱升级偏好统一换算，直接给出推荐。</p>
+    </header>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>汇率与偏好</h2>
+        <span class="tag">手动输入</span>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="rate">人民币兑日元汇率</label>
+          <div class="input-wrap">
+            <input id="rate" type="number" inputmode="decimal" min="0" step="0.0001" placeholder="例如 22.50" />
+            <span class="unit">1 CNY = JPY</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="fxFixedFee">固定换汇/支付手续费</label>
+          <div class="input-wrap">
+            <input id="fxFixedFee" type="number" inputmode="decimal" min="0" step="0.01" value="0" />
+            <span class="unit">固定金额</span>
+          </div>
+          <div class="hint">每次交易固定收取多少就填多少，没有手续费填 0。</div>
+        </div>
+
+        <div class="field">
+          <label for="fxFeeCurrency">手续费币种</label>
+          <div class="input-wrap">
+            <select id="fxFeeCurrency">
+              <option value="JPY">日元 JPY</option>
+              <option value="CNY">人民币 CNY</option>
+            </select>
+            <span class="unit">币种</span>
+          </div>
+          <div class="hint">例如固定收取 500 日元，就填 500 并选择 JPY。</div>
+        </div>
+
+        <div class="field full">
+          <label for="upgradeLimit">你愿意为商务舱多付的上限</label>
+          <div class="input-wrap">
+            <input id="upgradeLimit" type="number" inputmode="decimal" min="0" step="100" value="3000" />
+            <span class="unit">CNY</span>
+          </div>
+          <div class="hint">工具会先找最划算的经济舱，再判断商务舱是否落在这个升级预算内。</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>ANA 官网价格</h2>
+        <span class="tag">日元支付</span>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="anaEco">经济舱</label>
+          <div class="input-wrap">
+            <input id="anaEco" type="number" inputmode="numeric" min="0" step="1" placeholder="145750" />
+            <span class="unit">JPY</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="anaBiz">商务舱</label>
+          <div class="input-wrap">
+            <input id="anaBiz" type="number" inputmode="numeric" min="0" step="1" placeholder="可留空" />
+            <span class="unit">JPY</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>其他平台价格</h2>
+        <span class="tag">人民币支付</span>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="otherEco">经济舱</label>
+          <div class="input-wrap">
+            <input id="otherEco" type="number" inputmode="decimal" min="0" step="0.01" placeholder="例如 6200" />
+            <span class="unit">CNY</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="otherBiz">商务舱</label>
+          <div class="input-wrap">
+            <input id="otherBiz" type="number" inputmode="decimal" min="0" step="0.01" placeholder="可留空" />
+            <span class="unit">CNY</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="toggle-row">
+        <div class="toggle-copy">
+          <strong>考虑里程与信用卡积分</strong>
+          <span>开启后，将估算收益从票价中扣除，得到“有效成本”。</span>
+        </div>
+        <label class="switch" aria-label="考虑里程与信用卡积分">
+          <input id="considerRewards" type="checkbox" />
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <details id="rewardDetails">
+        <summary>里程与积分参数</summary>
+        <div class="advanced grid">
+          <div class="field">
+            <label for="mileValue">每里程估值</label>
+            <div class="input-wrap">
+              <input id="mileValue" type="number" inputmode="decimal" min="0" step="0.1" value="1.5" />
+              <span class="unit">JPY</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="anaRewardRate">ANA 官网支付回馈率</label>
+            <div class="input-wrap">
+              <input id="anaRewardRate" type="number" inputmode="decimal" min="0" step="0.1" value="0" />
+              <span class="unit">%</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="otherRewardRate">其他平台支付回馈率</label>
+            <div class="input-wrap">
+              <input id="otherRewardRate" type="number" inputmode="decimal" min="0" step="0.1" value="0" />
+              <span class="unit">%</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="anaEcoMiles">ANA 经济舱预计里程</label>
+            <div class="input-wrap">
+              <input id="anaEcoMiles" type="number" inputmode="numeric" min="0" step="1" value="1206" />
+              <span class="unit">mile</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="anaBizMiles">ANA 商务舱预计里程</label>
+            <div class="input-wrap">
+              <input id="anaBizMiles" type="number" inputmode="numeric" min="0" step="1" value="0" />
+              <span class="unit">mile</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="otherEcoMiles">其他平台经济舱里程</label>
+            <div class="input-wrap">
+              <input id="otherEcoMiles" type="number" inputmode="numeric" min="0" step="1" value="0" />
+              <span class="unit">mile</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="otherBizMiles">其他平台商务舱里程</label>
+            <div class="input-wrap">
+              <input id="otherBizMiles" type="number" inputmode="numeric" min="0" step="1" value="0" />
+              <span class="unit">mile</span>
+            </div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="calculateBtn">计算并推荐</button>
+      <button class="btn btn-secondary" id="resetBtn">清空</button>
+    </div>
+
+    <div id="error" class="error"></div>
+
+    <section id="result" class="result">
+      <div class="winner">
+        <div class="eyebrow">推荐方案</div>
+        <h2 id="winnerName">—</h2>
+        <p class="price" id="winnerPrice">—</p>
+        <div class="sub" id="winnerSub"></div>
+      </div>
+
+      <section class="card">
+        <div class="section-title">
+          <h2>四种方案对比</h2>
+          <span class="tag">有效成本</span>
+        </div>
+        <div id="comparison" class="comparison"></div>
+        <div id="reason" class="reason"></div>
+        <div class="formula">
+          有效成本 = 实际支付日元成本 − 里程估值 − 信用卡/平台回馈。<br />
+          其他平台日元成本 = 人民币价格 × 汇率 + 固定手续费（日元等值）。
+        </div>
+      </section>
+    </section>
+
+    <div class="footer-note">
+      计算结果用于辅助决策。退改签、行李额度、订座舱位和代理平台售后仍需单独确认。
+    </div>
+  </main>
+
+  <script>
+    const ids = [
+      "rate", "fxFixedFee", "fxFeeCurrency", "upgradeLimit",
+      "anaEco", "anaBiz", "otherEco", "otherBiz",
+      "considerRewards", "mileValue", "anaRewardRate", "otherRewardRate",
+      "anaEcoMiles", "anaBizMiles", "otherEcoMiles", "otherBizMiles"
+    ];
+
+    const $ = (id) => document.getElementById(id);
+    const num = (id) => {
+      const value = parseFloat($(id).value);
+      return Number.isFinite(value) ? value : null;
+    };
+
+    const yen = new Intl.NumberFormat("ja-JP", {
+      style: "currency",
+      currency: "JPY",
+      maximumFractionDigits: 0
+    });
+
+    const cny = new Intl.NumberFormat("zh-CN", {
+      style: "currency",
+      currency: "CNY",
+      maximumFractionDigits: 2
+    });
+
+    function saveState() {
+      const state = {};
+      ids.forEach(id => {
+        const el = $(id);
+        state[id] = el.type === "checkbox" ? el.checked : el.value;
+      });
+      localStorage.setItem("anaFareCalculatorState", JSON.stringify(state));
+    }
+
+    function loadState() {
+      try {
+        const state = JSON.parse(localStorage.getItem("anaFareCalculatorState") || "{}");
+        ids.forEach(id => {
+          if (!(id in state)) return;
+          const el = $(id);
+          if (el.type === "checkbox") el.checked = !!state[id];
+          else el.value = state[id];
+        });
+      } catch (_) {}
+    }
+
+    function clearState() {
+      localStorage.removeItem("anaFareCalculatorState");
+      $("rate").value = "";
+      $("fxFixedFee").value = "0";
+      $("fxFeeCurrency").value = "JPY";
+      $("upgradeLimit").value = "3000";
+      $("anaEco").value = "";
+      $("anaBiz").value = "";
+      $("otherEco").value = "";
+      $("otherBiz").value = "";
+      $("considerRewards").checked = false;
+      $("mileValue").value = "1.5";
+      $("anaRewardRate").value = "0";
+      $("otherRewardRate").value = "0";
+      $("anaEcoMiles").value = "1206";
+      $("anaBizMiles").value = "0";
+      $("otherEcoMiles").value = "0";
+      $("otherBizMiles").value = "0";
+      $("result").style.display = "none";
+      $("error").style.display = "none";
+    }
+
+    function showError(message) {
+      $("error").textContent = message;
+      $("error").style.display = "block";
+      $("result").style.display = "none";
+      $("error").scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function buildOptions() {
+      const rate = num("rate");
+      const fxFixedFee = num("fxFixedFee") ?? 0;
+      const fxFeeCurrency = $("fxFeeCurrency").value;
+      const considerRewards = $("considerRewards").checked;
+      const mileValue = num("mileValue") ?? 0;
+      const anaRewardRate = num("anaRewardRate") ?? 0;
+      const otherRewardRate = num("otherRewardRate") ?? 0;
+
+      const raw = [
+        {
+          key: "anaEco",
+          channel: "ANA 官网",
+          cabin: "经济舱",
+          currency: "JPY",
+          cash: num("anaEco"),
+          miles: num("anaEcoMiles") ?? 0,
+          rewardRate: anaRewardRate
+        },
+        {
+          key: "anaBiz",
+          channel: "ANA 官网",
+          cabin: "商务舱",
+          currency: "JPY",
+          cash: num("anaBiz"),
+          miles: num("anaBizMiles") ?? 0,
+          rewardRate: anaRewardRate
+        },
+        {
+          key: "otherEco",
+          channel: "其他平台",
+          cabin: "经济舱",
+          currency: "CNY",
+          cash: num("otherEco"),
+          miles: num("otherEcoMiles") ?? 0,
+          rewardRate: otherRewardRate
+        },
+        {
+          key: "otherBiz",
+          channel: "其他平台",
+          cabin: "商务舱",
+          currency: "CNY",
+          cash: num("otherBiz"),
+          miles: num("otherBizMiles") ?? 0,
+          rewardRate: otherRewardRate
+        }
+      ];
+
+      return raw
+        .filter(x => x.cash !== null && x.cash > 0)
+        .map(x => {
+          const fixedFeeJpy = x.currency === "CNY"
+            ? (fxFeeCurrency === "CNY" ? fxFixedFee * rate : fxFixedFee)
+            : 0;
+
+          const cashJpy = x.currency === "JPY"
+            ? x.cash
+            : x.cash * rate + fixedFeeJpy;
+
+          const mileBenefit = considerRewards ? x.miles * mileValue : 0;
+          const rewardBenefit = considerRewards ? cashJpy * x.rewardRate / 100 : 0;
+          const effectiveJpy = cashJpy - mileBenefit - rewardBenefit;
+
+          return {
+            ...x,
+            cashJpy,
+            fixedFeeJpy,
+            mileBenefit,
+            rewardBenefit,
+            effectiveJpy
+          };
+        });
+    }
+
+    function calculate() {
+      $("error").style.display = "none";
+
+      const rate = num("rate");
+      if (!rate || rate <= 0) {
+        showError("请先输入有效的人民币兑日元汇率，例如：1 CNY = 22.50 JPY。固定手续费可以按实际收费选择 JPY 或 CNY。");
+        return;
+      }
+
+      const options = buildOptions();
+      if (options.length < 2) {
+        showError("请至少输入两个可比较的票价。商务舱价格可以留空。");
+        return;
+      }
+
+      const economy = options
+        .filter(x => x.cabin === "经济舱")
+        .sort((a, b) => a.effectiveJpy - b.effectiveJpy);
+
+      if (!economy.length) {
+        showError("请至少输入一个经济舱价格，工具需要用它作为商务舱升级基准。");
+        return;
+      }
+
+      const cheapestEconomy = economy[0];
+      const upgradeLimitCny = num("upgradeLimit") ?? 0;
+      const upgradeLimitJpy = upgradeLimitCny * rate;
+
+      const eligibleBusiness = options
+        .filter(x =>
+          x.cabin === "商务舱" &&
+          (x.effectiveJpy - cheapestEconomy.effectiveJpy) <= upgradeLimitJpy
+        )
+        .sort((a, b) => a.effectiveJpy - b.effectiveJpy);
+
+      const winner = eligibleBusiness.length ? eligibleBusiness[0] : cheapestEconomy;
+      const sorted = [...options].sort((a, b) => a.effectiveJpy - b.effectiveJpy);
+      const lowest = sorted[0];
+      const considerRewards = $("considerRewards").checked;
+
+      $("winnerName").textContent = `${winner.channel} · ${winner.cabin}`;
+      $("winnerPrice").textContent = yen.format(winner.effectiveJpy);
+
+      const cashText = winner.currency === "JPY"
+        ? `实际支付 ${yen.format(winner.cash)}`
+        : `平台标价 ${cny.format(winner.cash)}，换算支付约 ${yen.format(winner.cashJpy)}`;
+
+      $("winnerSub").textContent = considerRewards
+        ? `${cashText}；已扣除里程与积分估值。`
+        : `${cashText}；当前未计入里程和积分。`;
+
+      $("comparison").innerHTML = sorted.map((x, index) => {
+        const original = x.currency === "JPY"
+          ? yen.format(x.cash)
+          : `${cny.format(x.cash)} ≈ ${yen.format(x.cashJpy)}`;
+
+        const feeText = x.currency === "CNY"
+          ? `固定手续费：${yen.format(x.fixedFeeJpy)}`
+          : "无需换汇手续费";
+
+        const benefit = considerRewards
+          ? `${feeText}<br />里程价值 ${yen.format(x.mileBenefit)}，支付回馈 ${yen.format(x.rewardBenefit)}`
+          : `${feeText}<br />未计入里程与支付回馈`;
+
+        const badge = x.key === winner.key
+          ? `<span class="option-badge">最终推荐</span>`
+          : index === 0
+            ? `<span class="option-badge">最低成本</span>`
+            : "";
+
+        return `
+          <article class="option ${index === 0 ? "best" : ""} ${x.key === winner.key ? "selected" : ""}">
+            <div class="option-head">
+              <div class="option-name">${x.channel} · ${x.cabin}</div>
+              ${badge}
+            </div>
+            <div class="option-price">${yen.format(x.effectiveJpy)}</div>
+            <div class="option-meta">
+              原始价格：${original}<br />
+              ${benefit}
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      let reason = "";
+      if (winner.cabin === "商务舱") {
+        const diffJpy = winner.effectiveJpy - cheapestEconomy.effectiveJpy;
+        const diffCny = diffJpy / rate;
+        reason = `最便宜的经济舱是“${cheapestEconomy.channel}”，有效成本为 ${yen.format(cheapestEconomy.effectiveJpy)}。`
+          + `推荐商务舱相对它多花约 ${yen.format(diffJpy)}（约 ${cny.format(diffCny)}），`
+          + `没有超过你设定的 ${cny.format(upgradeLimitCny)} 升级上限。`;
+      } else {
+        const business = options
+          .filter(x => x.cabin === "商务舱")
+          .sort((a, b) => a.effectiveJpy - b.effectiveJpy)[0];
+
+        if (business) {
+          const diffJpy = business.effectiveJpy - cheapestEconomy.effectiveJpy;
+          const diffCny = diffJpy / rate;
+          reason = `当前推荐最便宜的经济舱。最便宜商务舱需要多花约 ${yen.format(diffJpy)}（约 ${cny.format(diffCny)}），`
+            + `超过你设定的 ${cny.format(upgradeLimitCny)} 升级上限。`;
+        } else {
+          reason = "当前没有输入可比较的商务舱价格，因此推荐有效成本最低的经济舱。";
+        }
+      }
+
+      if (winner.key !== lowest.key) {
+        reason += ` 说明：单看成本最低的是“${lowest.channel} · ${lowest.cabin}”，但你的商务舱升级偏好改变了最终选择。`;
+      }
+
+      $("reason").textContent = reason;
+      $("result").style.display = "block";
+      $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+      saveState();
+    }
+
+    ids.forEach(id => {
+      const el = $(id);
+      el.addEventListener("input", saveState);
+      el.addEventListener("change", saveState);
+    });
+
+    $("calculateBtn").addEventListener("click", calculate);
+    $("resetBtn").addEventListener("click", clearState);
+
+    loadState();
+  </script>
+</body>
+</html>
